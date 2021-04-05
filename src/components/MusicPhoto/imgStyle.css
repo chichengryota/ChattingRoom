@@ -1,0 +1,53 @@
+.photoBox {
+  position: relative;
+  background-color: #f1f1f1;
+  min-height: 800px;
+  margin: 0;
+  padding: 5px;
+  overflow: auto;
+}
+.masonry {
+  display: flex;
+  flex-flow: column wrap;
+  counter-reset: items;
+}
+.masonry .item {
+  position: relative;
+  width: 25%;
+  padding: 4px;
+  box-sizing: border-box;
+}
+.masonry .item el-image {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+.masonry .items::after {
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  width: 24px;
+  height: 24px;
+  line-height: 24px;
+  border-radius: 6px;
+  display: block;
+  text-align: center;
+  counter-increment: items;
+  content: counter(items);
+  color: #fff;
+  background-color: rgba(0, 0, 0, 0.3);
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+.masonry .items:nth-child(4n + 1) {
+  order: 1;
+}
+.masonry .items:nth-child(4n + 2) {
+  order: 2;
+}
+.masonry .items:nth-child(4n + 3) {
+  order: 3;
+}
+.masonry .items:nth-child(4n) {
+  order: 4;
+}
+/*# sourceMappingURL=./imgStyle.css.map */

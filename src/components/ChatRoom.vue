@@ -123,6 +123,23 @@ export default {
       imgAllUrl: [],
     };
   },
+  computed: {
+    userListLength() {
+      return this.userList.length;
+    },
+  },
+  watch: {
+    message(newValue) {
+      this.handleMessageBox(newValue);
+    },
+  },
+  mounted() {
+    this.emojiList = emoji;
+  },
+  updated() {
+    // 聊天定位到底部
+    this.handleScrollBottom();
+  },
   methods: {
     handlePress(e) {
       if (e.ctrlKey && e.keyCode == 13) {
@@ -195,23 +212,6 @@ export default {
     handleScrollBottom() {
       const ul = this.$refs.joinUs;
       ul.scrollTop = ul.scrollHeight;
-    },
-  },
-  computed: {
-    userListLength() {
-      return this.userList.length;
-    },
-  },
-  mounted() {
-    this.emojiList = emoji;
-  },
-  updated() {
-    // 聊天定位到底部
-    this.handleScrollBottom();
-  },
-  watch: {
-    message(newValue) {
-      this.handleMessageBox(newValue);
     },
   },
 };

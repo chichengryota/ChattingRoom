@@ -2,15 +2,16 @@
   <div>
     <div class="userContainer">
       <div class="avatarContainer">
-        <el-avatar :src="url" :size="170"></el-avatar>
+        <el-avatar :src="avatar" :size="170"></el-avatar>
         <el-upload
           class="avatar-uploader"
-          action="http://localhost:3000/upload"
+          :action="$apiServer + 'upload?type=1'"
           :show-file-list="false"
           :on-success="handleAvatarSuccess"
           :before-upload="beforeuploadButton"
+          :limit="1"
         >
-          <img v-if="imageUrl" :src="imageUrl" class="avatarImg" />
+          <img v-if="isUpload" :src="preAvatar" class="avatarImg" />
           <i v-else class="el-icon-plus avatar-uploader-icon"></i>
         </el-upload>
         <el-button type="primary" class="uploadButton" @click="uploadAvatar"
@@ -19,7 +20,7 @@
       </div>
       <div class="userInfoContainer">
         <el-form
-          :label-position="labelPosition"
+          label-position="top"
           :model="userInfoForm"
           ref="userInfoFormRef"
         >
@@ -33,10 +34,8 @@
             ></el-input>
           </el-form-item>
           <el-form-item label="性别">
-            <el-radio-group v-model="userInfoForm.sex">
-              <el-radio label="男"></el-radio>
-              <el-radio label="女"></el-radio>
-            </el-radio-group>
+            <el-radio :label="1" v-model="userInfoForm.sex">男</el-radio>
+            <el-radio :label="2" v-model="userInfoForm.sex">女</el-radio>
           </el-form-item>
           <el-form-item label="生日">
             <el-date-picker
@@ -58,75 +57,76 @@
 export default {
   data() {
     return {
-      url: "",
-      imageUrl: "",
-      tempUrl: "",
-      id: 0,
       avatar: "",
-      userInfoForm: {
-        username: "",
-        signature: "",
-        sex: "",
-        birthday: "",
-      },
-      labelPosition: "top",
+      preAvatar: "",
+      isUpload: false,
+      tempUrl: "",
+      userInfoForm: {},
     };
   },
   mounted() {
-    this.id = window.sessionStorage.getItem("id");
-    this.showUserInfo();
+    let userInfo = window.sessionStorage.getItem("userInfo");
+    userInfo = JSON.parse(userInfo);
+    this.avatar = userInfo.avatar;
+    this.userInfoForm = userInfo;
   },
   methods: {
-    handleAvatarSuccess(res, file) {
-      this.imageUrl = URL.createObjectURL(file.raw);
-      this.tempUrl = res;
-    },
     beforeuploadButton(file) {
-      const isJPG = file.type === "image/jpeg";
+      const isJPG1 = file.type === "image/jpeg";
+      const isJPG2 = file.type === "image/jpg";
+      const isJPG3 = file.type === "image/png";
       const isLt2M = file.size / 1024 / 1024 < 2;
-      if (!isJPG) {
-        this.$message.error("上传头像图片只能是 JPG 格式!");
+      if (!isJPG1 && !isJPG2 && !isJPG3) {
+        this.$message.error("上传头像图片只能是 JPG 或 PNG 格式!");
       }
       if (!isLt2M) {
         this.$message.error("上传头像图片大小不能超过 2MB!");
       }
-      return isJPG && isLt2M;
+      return (isJPG1 || isJPG2 || isJPG3) && isLt2M;
+    },
+    handleAvatarSuccess(res, file) {
+      this.isUpload = true;
+      this.preAvatar = URL.createObjectURL(file.raw);
+      this.tempUrl = res;
     },
     async uploadAvatar() {
-      if (this.imageUrl !== "") {
-        const { data: res } = await this.$http.post("upavatar", {
-          id: this.id,
-          imgUrl: this.tempUrl,
-        });
-        if (res.code !== 200) {
-          return this.$message.error("上传头像失败!");
-        }
-        this.$message.success("上传头像成功");
-        this.url = this.tempUrl;
-        this.imageUrl = "";
+      if (!this.isUpload) {
+        return this.$message.warning("请先选择要更换的头像!");
       }
-    },
-    async showUserInfo() {
-      const { data: res } = await this.$http.post("shuserinfo", {
-        id: this.id,
+      const { data: res } = await this.$http.post("user/update/avatar", {
+        id: this.userInfoForm.id,
+        imgUrl: this.tempUrl,
       });
       if (res.code !== 200) {
-        return this.$message.error("获取用户信息失败!");
+        return this.$message.error(res.msg);
       }
-      this.url = res.data.avatar;
-      this.userInfoForm = res.data;
+      this.$message.success(res.msg);
+      this.avatar = res.url;
+      this.isUpload = false;
+      this.userInfoForm.avatar = this.avatar;
+      this.$store.commit("setAvatar", this.avatar);
+      window.sessionStorage.setItem(
+        "userInfo",
+        JSON.stringify(this.userInfoForm)
+      );
     },
     updateUserInfo() {
       this.$refs.userInfoFormRef.validate(async (valid) => {
         if (!valid) return;
-        const { data: res } = await this.$http.post("upuserinfo", {
-          id: this.id,
-          userInfoForm: this.userInfoForm,
+        const { data: res } = await this.$http.post("user/update/userinfo", {
+          id: this.userInfoForm.id,
+          signature: this.userInfoForm.signature,
+          sex: this.userInfoForm.sex,
+          birthday: this.userInfoForm.birthday,
         });
         if (res.code !== 200) {
-          return this.$message.error("更新用户信息失败!");
+          return this.$message.error(res.msg);
         }
-        this.$message.success("更新用户信息成功!");
+        this.$message.success(res.msg);
+        window.sessionStorage.setItem(
+          "userInfo",
+          JSON.stringify(this.userInfoForm)
+        );
       });
     },
   },

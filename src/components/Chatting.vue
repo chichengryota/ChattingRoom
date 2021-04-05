@@ -1,7 +1,7 @@
 <template>
   <div>
     <el-card class="chatBox" :body-style="{ padding: '0px' }">
-      <div class="loginChat" v-if="isLogin">
+      <div class="loginChat" v-if="!isEnter">
         <img :src="avatar" alt="" />
         <span>{{ username }}</span>
         <button @click="loginChat">进入聊天室</button>
@@ -29,43 +29,32 @@ export default {
     return {
       username: "",
       avatar: "",
-      isLogin: true,
+      isEnter: false,
       socket: null,
       user: {},
       userList: [],
       message: {},
     };
   },
-  methods: {
-    loginChat() {
-      this.socket.emit("login", {
-        username: this.username,
-        avatar: this.avatar,
-      });
-    },
-    handleFile(file) {
-      this.socket.emit("sendImage", { ...this.user, file });
-    },
-    sendServer(content) {
-      const { username, avatar } = this.user;
-      this.socket.emit("sendMessage", { msg: content, username, avatar });
-    },
+  created() {
+    let userInfo = window.sessionStorage.getItem("userInfo");
+    userInfo = JSON.parse(userInfo);
+    this.avatar = userInfo.avatar;
+    this.username = userInfo.username;
   },
   mounted() {
-    this.username = window.sessionStorage.getItem("username");
-    this.avatar = window.sessionStorage.getItem("avatar");
     /**
      * 聊天室的主要功能
      */
     // 连接服务器
-    this.socket = io("http://localhost:3000/");
+    this.socket = io(this.$apiServer);
     // 监听登录失败的请求
     this.socket.on("userExit", (data) => this.$message.error(data.msg));
     // 监听登录成功的请求
     this.socket.on("loginsuccess", (data) => {
       this.$message.success(data.msg);
       this.user = data;
-      this.isLogin = false;
+      this.isEnter = true;
     });
     this.socket.on("addUser", (data) => {
       this.$store.commit("setJoinRoom", data);
@@ -92,6 +81,21 @@ export default {
   },
   destroyed() {
     if (this.socket) this.socket.disconnect();
+  },
+  methods: {
+    loginChat() {
+      this.socket.emit("login", {
+        username: this.username,
+        avatar: this.avatar,
+      });
+    },
+    handleFile(file) {
+      this.socket.emit("sendImage", { ...this.user, file });
+    },
+    sendServer(content) {
+      const { username, avatar } = this.user;
+      this.socket.emit("sendMessage", { msg: content, username, avatar });
+    },
   },
 };
 </script>

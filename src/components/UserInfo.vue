@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="userinfo">
     <el-card>
       <el-menu
         :default-active="activeIndex"
@@ -70,6 +70,9 @@ export default {
 </script>
 
 <style lang="less" scoped>
+.userinfo {
+  padding-bottom: 20px;
+}
 .el-card {
   height: 100%;
   width: 75%;

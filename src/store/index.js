@@ -6,7 +6,8 @@ Vue.use(Vuex)
 export default new Vuex.Store({
   state: {
     joinRoom: {},
-    leaveRoom: {}
+    leaveRoom: {},
+    avatar: ''
   },
   mutations: {
     setJoinRoom(state, payload) {
@@ -14,6 +15,9 @@ export default new Vuex.Store({
     },
     setLeaveRoom(state, payload) {
       state.leaveRoom.username = payload.username
+    },
+    setAvatar(state, payload) {
+      state.avatar = payload
     }
   },
   actions: {},

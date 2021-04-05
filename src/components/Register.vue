@@ -7,6 +7,7 @@
     <div class="register_box">
       <!-- 登录表单区域 -->
       <h1>REGISTER</h1>
+      <button class="goHomeButton" @click="goHome">首页</button>
       <el-form
         :model="registerForm"
         :rules="registerFormRules"
@@ -31,7 +32,7 @@
             prefix-icon="iconfont icon-youxiang1"
             class="inputStyle"
             placeholder="输入邮箱"
-            @blur="sendEmail"
+            @blur="checkEmail"
           ></el-input>
         </el-form-item>
         <!-- 密码 -->
@@ -58,7 +59,6 @@
         <el-form-item>
           <div class="btns">
             <button class="registerButton" @click="register">注册</button>
-            <button class="goHomeButton" @click="goHome">返回首页</button>
           </div>
         </el-form-item>
       </el-form>
@@ -102,17 +102,17 @@ export default {
       },
     };
   },
+  mounted() {
+    this.$refs.input1.focus();
+  },
   methods: {
-    sendEmail: function () {
+    checkEmail: function () {
       var regEmail = /^[A-Za-z0-9\u4e00-\u9fa5]+@[a-zA-Z0-9_-]+(\.[a-zA-Z0-9_-]+)+$/;
       if (
         this.registerForm.email != "" &&
         !regEmail.test(this.registerForm.email)
       ) {
-        this.$message({
-          message: "邮箱格式不正确",
-          type: "error",
-        });
+        this.$message.error("邮箱格式不正确");
         this.registerForm.email = "";
       }
     },
@@ -125,14 +125,10 @@ export default {
           const { data: res } = await this.$http.post("register", {
             params: this.registerForm,
           });
-          if (res.code === 201) {
-            return this.$message.error("注册失败，用户名已存在!");
-          } else if (res.code === 202) {
-            return this.$message.error("注册失败，邮箱已存在!");
-          } else if (res.code === 500) {
-            return this.$message.error("注册失败，服务器错误！");
+          if (res.code !== 200) {
+            return this.$message.error(res.msg);
           }
-          this.$message.success("注册成功");
+          this.$message.success(res.msg);
           this.$router.push("/login");
         });
       }
@@ -140,9 +136,6 @@ export default {
     goHome() {
       this.$router.push("/");
     },
-  },
-  mounted() {
-    this.$refs.input1.focus();
   },
 };
 </script>
@@ -200,29 +193,33 @@ export default {
   }
 }
 .btns {
-  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 .registerButton {
   width: 110px;
   height: 45px;
   font-size: 22px;
-  border: 0;
+  font-weight: bold;
+  border: none;
   color: white;
   border-radius: 200px;
   background-image: linear-gradient(120deg, #a6c0fe 0%, #f68084 100%);
-  position: absolute;
-  left: 50%;
-  transform: translateX(-50%);
+  cursor: pointer;
 }
 .goHomeButton {
-  width: 90px;
-  height: 30px;
-  font-size: 14px;
-  border: 0;
+  position: absolute;
+  top: 30px;
+  right: 36px;
+  width: 42px;
+  height: 42px;
+  font-size: 15px;
+  font-weight: bold;
+  border: none;
   color: white;
-  border-radius: 20px;
+  border-radius: 50%;
   background-image: linear-gradient(120deg, #a6c0fe 0%, #f68084 100%);
-  margin-left: 20px;
-  margin-top: 8px;
+  cursor: pointer;
 }
 </style>

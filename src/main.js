@@ -14,20 +14,28 @@ import 'vue-photo-preview/dist/skin.css'
 let options = {
   fullscreenEl: false
 };
+//音乐播放器功能
+import vueAplayer from 'vue-aplayer'
+
+Vue.use(vueAplayer)
 Vue.use(preview, options)
 Vue.use(preview)
+Vue.use(ElementUI)
+
 //引入axios
 import axios from 'axios'
+
+let BASE_URL = 'http://8.129.128.30:4000/'
 //配置请求的根路径
-axios.defaults.baseURL = 'http://localhost:3000/'
+axios.defaults.baseURL = BASE_URL
 //给请求头中添加token
 axios.interceptors.request.use(config => {
-  config.headers.Authorization = window.sessionStorage.getItem('token')
+  config.headers.Authorization = window.sessionStorage.getItem('token') || null
   return config
 })
 
-Vue.use(ElementUI)
 Vue.prototype.$http = axios
+Vue.prototype.$apiServer = BASE_URL
 Vue.config.productionTip = false
 
 new Vue({

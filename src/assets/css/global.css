@@ -9,3 +9,12 @@ body,
 button:focus {
   outline: none;
 }
+
+/* 清除浮动 */
+.clearfix:after {
+  visibility: hidden;
+  clear: both;
+  display: block;
+  content: ".";
+  height: 0
+}

@@ -1,37 +1,29 @@
 <template>
-  <div>
-    <el-row>
-      <el-col :span="5" :push="3">
-        <el-card :body-style="{ padding: '0px' }">
-          <a href="javascript:;" @click="goMessage">
-            <img src="../assets/img/card1.jpg" class="image" />
-            <div class="boxName">
-              <span>留言板</span>
-            </div>
-          </a>
-        </el-card>
-      </el-col>
-      <el-col :span="5" :push="4">
-        <el-card :body-style="{ padding: '0px' }">
-          <a href="javascript:;" @click="goChatting">
-            <img src="../assets/img/card2.jpg" class="image" />
-            <div class="boxName">
-              <span>聊天室</span>
-            </div>
-          </a>
-        </el-card>
-      </el-col>
-      <el-col :span="5" :push="5">
-        <el-card :body-style="{ padding: '0px' }">
-          <a href="javascript:;">
-            <img src="../assets/img/card3.jpg" class="image" />
-            <div class="boxName">
-              <span>发现</span>
-            </div>
-          </a>
-        </el-card>
-      </el-col>
-    </el-row>
+  <div class="homeMain">
+    <el-card :body-style="{ padding: '0px' }">
+      <div class="homeMain-content" @click="goMessage">
+        <img src="../assets/img/card1.jpg" class="image" />
+        <div class="boxName">
+          <span>留言板</span>
+        </div>
+      </div>
+    </el-card>
+    <el-card :body-style="{ padding: '0px' }">
+      <div class="homeMain-content" @click="goChatting">
+        <img src="../assets/img/card2.jpg" class="image" />
+        <div class="boxName">
+          <span>聊天室</span>
+        </div>
+      </div>
+    </el-card>
+    <el-card :body-style="{ padding: '0px' }">
+      <div class="homeMain-content" @click="goMusicRoom">
+        <img src="../assets/img/card3.jpg" class="image" />
+        <div class="boxName">
+          <span>发现</span>
+        </div>
+      </div>
+    </el-card>
   </div>
 </template>
 
@@ -42,56 +34,64 @@ export default {
   },
   methods: {
     goMessage() {
-      this.$router.push("/message");
+      this.$router.push("/dynamic");
     },
     goChatting() {
-      const tokenStr = window.sessionStorage.getItem("token");
-      if (!tokenStr) {
-        this.$message("请先登录");
-        this.$router.push("/login");
-      } else {
-        this.$router.push("/chatting");
-      }
+      this.$router.push("/chatting");
+    },
+    goMusicRoom() {
+      this.$router.push("/find");
     },
   },
 };
 </script>
 
 <style lang="less" scoped>
-.el-row {
-  margin-top: 70px;
+.homeMain {
+  margin-top: 90px;
+  display: flex;
+  justify-content: space-evenly;
+  align-items: center;
+  padding: 0 50px;
 }
 .el-card {
+  width: 320px;
   height: 440px;
-  position: relative;
   box-shadow: 0 0 5px rgba(0, 0, 0, 0.6) !important;
   border: none;
-  img {
-    width: 700px;
-    position: absolute;
-    left: -200px;
-  }
-  .boxName {
-    position: absolute;
+  .homeMain-content {
     width: 100%;
-    height: 40px;
-    line-height: 40px;
-    bottom: 0;
-    font-size: 22px;
-    font-weight: bold;
-    text-align: center;
-    padding-bottom: 5px;
-    color: rgb(85, 26, 139);
+    height: 100%;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    .image {
+      height: 440px;
+    }
+    .boxName {
+      width: 100%;
+      text-align: center;
+      height: 40px;
+      line-height: 40px;
+      font-size: 22px;
+      font-weight: bold;
+      color: rgb(85, 26, 139);
+      position: absolute;
+      bottom: 0;
+      background-color: #fff;
+    }
   }
 }
-.el-card:hover img {
-  opacity: 0.7;
+.homeMain-content:hover img {
+  opacity: 0.8;
   transform: scale(1.4) rotate(7deg);
   transition-duration: 0.4s;
 }
-.el-card:hover .boxName {
-  height: 220px;
+.homeMain-content:hover .boxName {
+  top: 45%;
   font-size: 50px;
   color: rgb(226, 163, 92);
+  background-color: rgba(255, 255, 255, 0);
 }
 </style>

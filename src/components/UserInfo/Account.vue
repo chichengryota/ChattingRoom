@@ -13,7 +13,7 @@
             <el-input
               prefix-icon="iconfont icon-youxiang1"
               v-model="emailForm.email"
-              @blur="sendEmail"
+              @blur="checkEmail"
             ></el-input>
           </el-form-item>
         </el-form>
@@ -108,7 +108,8 @@ export default {
         newPassWord: "",
         checkPassWord: "",
       },
-      id: 0,
+      userInfo: {},
+      id: null,
       dialogVisible: false,
       accountFormRules: {
         password: [
@@ -136,25 +137,18 @@ export default {
     };
   },
   mounted() {
-    this.id = window.sessionStorage.getItem("id");
-    this.getEmail();
+    let userInfo = window.sessionStorage.getItem("userInfo");
+    this.userInfo = JSON.parse(userInfo);
+    this.id = this.userInfo.id;
+    this.emailForm.email = this.userInfo.email;
   },
   methods: {
-    sendEmail: function () {
+    checkEmail: function () {
       var regEmail = /^[A-Za-z0-9\u4e00-\u9fa5]+@[a-zA-Z0-9_-]+(\.[a-zA-Z0-9_-]+)+$/;
       if (this.emailForm.email != "" && !regEmail.test(this.emailForm.email)) {
-        this.$message({
-          message: "邮箱格式不正确",
-          type: "error",
-        });
+        this.$message.error("邮箱格式不正确");
         this.emailForm.email = "";
       }
-    },
-    async getEmail() {
-      const { data: res } = await this.$http.post("shuserinfo", {
-        id: this.id,
-      });
-      this.emailForm.email = res.data.email;
     },
     updateEmail() {
       this.$refs.emailFormRef.validate(async (valid) => {
@@ -169,18 +163,21 @@ export default {
           }
         ).catch((err) => err);
         if (confirmResult !== "confirm") {
-          return this.$message.info("取消了删除");
+          return;
         }
-        const { data: res } = await this.$http.post("upemail", {
+        const { data: res } = await this.$http.post("user/update/email", {
           id: this.id,
           email: this.emailForm.email,
         });
-        if (res.code === 201) {
-          return this.$message.error("更改绑定邮箱失败，邮箱已存在!");
-        } else if (res.code === 500) {
-          return this.$message.error("更改绑定邮箱失败，服务器错误!");
+        if (res.code !== 200) {
+          return this.$message.error(res.msg);
         }
-        this.$message.success("绑定邮箱成功");
+        this.$message.success(res.msg);
+        this.userInfo.email = this.emailForm.email;
+        window.sessionStorage.setItem(
+          "userInfo",
+          JSON.stringify(this.userInfo)
+        );
       });
     },
     updatePwd() {
@@ -192,29 +189,32 @@ export default {
           type: "success",
         }).catch((err) => err);
         if (confirmResult !== "confirm") {
-          return this.$message.info("取消了删除");
+          return;
         }
-        const { data: res } = await this.$http.post("uppwd", {
+        const { data: res } = await this.$http.post("user/update/pwd", {
           id: this.id,
           password: this.accountForm.password,
           newPassWord: this.accountForm.newPassWord,
         });
-        if (res.code === 201) {
-          return this.$message.error("当前密码输入错误!");
-        } else if (res.code === 500) {
-          return this.$message.error("修改密码失败，服务器错误!");
+        if (res.code !== 200) {
+          return this.$message.error(res.msg);
         }
-        this.$message.success("修改密码成功");
+        this.$message.success(res.msg);
+        this.userInfo.password = this.accountForm.password;
+        window.sessionStorage.setItem(
+          "userInfo",
+          JSON.stringify(this.userInfo)
+        );
       });
     },
     async deleteAccount() {
-      const { data: res } = await this.$http.post("deluser", {
+      const { data: res } = await this.$http.post("user/delete/user", {
         id: this.id,
       });
       if (res.code !== 200) {
-        return this.$message.error("注销账号失败!");
+        return this.$message.error(res.msg);
       }
-      this.$message.success("注销账号成功");
+      this.$message.success(res.msg);
       this.dialogVisible = false;
       window.sessionStorage.clear();
       this.$router.push("/login");

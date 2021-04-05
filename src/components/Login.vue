@@ -30,7 +30,7 @@
             prefix-icon="iconfont icon-youxiang1"
             class="inputStyle"
             placeholder="email"
-            @blur="sendEmail"
+            @blur="checkEmail"
             ref="input1"
           ></el-input>
         </el-form-item>
@@ -47,10 +47,12 @@
         <!-- 按钮区域 -->
         <el-form-item>
           <div class="btns">
-            <button class="loginButton" @click="login">登录</button>
-            <button class="goRegButton" @click="goRegister">前往注册</button>
-            <button class="checkButton" @click="checkUser">
-              {{ user }}登录
+            <button class="loginButton button" @click="login">登录</button>
+            <button class="goRegButton button" @click="goRegister">
+              前往注册
+            </button>
+            <button class="checkButton button" @click="chooseUser">
+              {{ loginText }}登录
             </button>
           </div>
         </el-form-item>
@@ -63,7 +65,7 @@
 export default {
   data() {
     return {
-      user: "邮箱",
+      loginText: "邮箱",
       isUser: true,
       loginForm: {
         username: "",
@@ -93,14 +95,14 @@ export default {
       },
     };
   },
+  mounted() {
+    this.$refs.input1.focus();
+  },
   methods: {
-    sendEmail: function () {
+    checkEmail: function () {
       var regEmail = /^[A-Za-z0-9\u4e00-\u9fa5]+@[a-zA-Z0-9_-]+(\.[a-zA-Z0-9_-]+)+$/;
       if (this.loginForm.email != "" && !regEmail.test(this.loginForm.email)) {
-        this.$message({
-          message: "邮箱格式不正确",
-          type: "error",
-        });
+        this.$message.error("邮箱格式不正确");
         this.loginForm.email = "";
       }
     },
@@ -110,27 +112,25 @@ export default {
         const { data: res } = await this.$http.post("login", {
           params: this.loginForm,
         });
-        if (res.code === 201) {
-          return this.$message.error("登陆失败，密码错误!");
-        } else if (res.code === 202) {
-          return this.$message.error("登陆失败，用户不存在!");
+        if (res.code !== 200) {
+          return this.$message.error(res.msg);
         }
-        this.$message.success("登录成功");
+        this.$message.success(res.msg);
         window.sessionStorage.setItem("token", res.token);
-        window.sessionStorage.setItem("id", res.id);
+        window.sessionStorage.setItem("userInfo", JSON.stringify(res.data));
         this.$router.push("/");
       });
     },
     goRegister() {
       this.$router.push("/register");
     },
-    checkUser() {
-      if (this.user === "邮箱") {
+    chooseUser() {
+      if (this.loginText === "邮箱") {
         this.isUser = false;
-        this.user = "用户名";
+        this.loginText = "用户名";
       } else {
         this.isUser = true;
-        this.user = "邮箱";
+        this.loginText = "邮箱";
       }
       this.loginForm = {
         username: "",
@@ -138,9 +138,6 @@ export default {
         email: "",
       };
     },
-  },
-  mounted() {
-    this.$refs.input1.focus();
   },
 };
 </script>
@@ -203,6 +200,11 @@ export default {
   align-content: center;
   margin-top: 15px;
 }
+.button {
+  background-image: linear-gradient(120deg, #a6c0fe 0%, #f68084 100%);
+  color: white;
+  border: none;
+}
 .loginButton {
   order: 2;
   width: 110px;
@@ -210,29 +212,20 @@ export default {
   margin: 0 70px;
   margin-top: -10px;
   font-size: 26px;
-  border: 0;
-  color: white;
   border-radius: 200px;
-  background-image: linear-gradient(120deg, #a6c0fe 0%, #f68084 100%);
 }
 .goRegButton {
   order: 1;
   width: 90px;
   height: 30px;
   font-size: 14px;
-  border: 0;
-  color: white;
   border-radius: 20px;
-  background-image: linear-gradient(120deg, #a6c0fe 0%, #f68084 100%);
 }
 .checkButton {
   order: 3;
   width: 90px;
   height: 30px;
   font-size: 14px;
-  border: 0;
-  color: white;
   border-radius: 20px;
-  background-image: linear-gradient(120deg, #a6c0fe 0%, #f68084 100%);
 }
 </style>
