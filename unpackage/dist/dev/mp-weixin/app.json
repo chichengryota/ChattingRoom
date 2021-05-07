@@ -1,0 +1,56 @@
+{
+  "pages": [
+    "pages/login/login",
+    "pages/index/index",
+    "pages/friend/friend",
+    "pages/message/message",
+    "pages/my/my",
+    "pages/register/register",
+    "pages/person/person",
+    "pages/account/account",
+    "pages/search/search",
+    "pages/chat/chat"
+  ],
+  "subPackages": [],
+  "window": {
+    "navigationBarTextStyle": "black",
+    "navigationBarTitleText": "uni-app",
+    "navigationBarBackgroundColor": "#F8F8F8",
+    "backgroundColor": "#F8F8F8",
+    "navigationStyle": "custom"
+  },
+  "tabBar": {
+    "color": "#7A7E83",
+    "selectedColor": "#1296db",
+    "borderStyle": "black",
+    "backgroundColor": "#ffffff",
+    "list": [
+      {
+        "pagePath": "pages/index/index",
+        "iconPath": "static/image/chat.png",
+        "selectedIconPath": "static/image/chat-select.png",
+        "text": "聊天"
+      },
+      {
+        "pagePath": "pages/friend/friend",
+        "iconPath": "static/image/friend.png",
+        "selectedIconPath": "static/image/friend-select.png",
+        "text": "通讯录"
+      },
+      {
+        "pagePath": "pages/message/message",
+        "iconPath": "static/image/message.png",
+        "selectedIconPath": "static/image/message-select.png",
+        "text": "发现"
+      },
+      {
+        "pagePath": "pages/my/my",
+        "iconPath": "static/image/my.png",
+        "selectedIconPath": "static/image/my-select.png",
+        "text": "我的"
+      }
+    ]
+  },
+  "usingComponents": {},
+  "sitemapLocation": "sitemap.json"
+}
