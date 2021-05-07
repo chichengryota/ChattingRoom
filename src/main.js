@@ -26,6 +26,7 @@ Vue.use(ElementUI)
 import axios from 'axios'
 
 let BASE_URL = 'http://localhost:4000/'
+// let BASE_URL = 'http://8.129.128.30:4000/'
 //配置请求的根路径
 axios.defaults.baseURL = BASE_URL
 //给请求头中添加token

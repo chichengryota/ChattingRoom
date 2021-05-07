@@ -174,6 +174,9 @@ export default {
     },
     handleFile(e) {
       const file = e.target.files[0];
+      if (file.size > 1024 * 1024) {
+        return this.$message.info("发送图片大小不能超过1M!");
+      }
       const reader = new FileReader(); // 创建读取文件对象
       reader.readAsDataURL(file); // 发起异步请求，读取文件
       reader.onload = (e) => {

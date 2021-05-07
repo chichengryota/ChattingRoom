@@ -4,7 +4,7 @@
       <!-- 导航栏左侧 -->
       <div class="header-left" @click="goHome">
         <img src="../assets/img/star.png" alt="" />
-        <span>在线聊天留言系统</span>
+        <span>聊天留言系统</span>
       </div>
       <!-- 导航栏菜单 -->
       <ul class="header-navList">

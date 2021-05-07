@@ -55,10 +55,11 @@ export default {
   padding: 0 50px;
 }
 .el-card {
-  width: 320px;
+  width: 22%;
   height: 440px;
   box-shadow: 0 0 5px rgba(0, 0, 0, 0.6) !important;
   border: none;
+  // padding: 10px;
   .homeMain-content {
     width: 100%;
     height: 100%;
@@ -67,6 +68,7 @@ export default {
     flex-direction: column;
     align-items: center;
     .image {
+      width: 100%;
       height: 440px;
     }
     .boxName {
