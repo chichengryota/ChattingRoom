@@ -257,10 +257,22 @@ agreeAdd = (req, res) => {
         msg: "添加好友失败"
       })
     }
-    res.send({
-      code: 200,
-      msg: "添加好友成功"
-    })
+    sql = "insert into follow(follow,befollow) values(?,?);";
+    sqlArr = [uid, id];
+    callback = (error, data) => {
+      if (error) throw error;
+      sql = "insert into follow(follow,befollow) values(?,?);";
+      sqlArr = [id, uid];
+      callback = (error, data) => {
+        if (error) throw error;
+        res.send({
+          code: 200,
+          msg: "添加好友成功"
+        })
+      }
+      dbconfig.sqlConnect(sql, sqlArr, callback)
+    }
+    dbconfig.sqlConnect(sql, sqlArr, callback)
   }
   dbconfig.sqlConnect(sql, sqlArr, callback)
 }

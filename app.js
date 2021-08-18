@@ -57,8 +57,8 @@ app.use(cors());
 // });
 
 // 定义全局域名变量
-// global.BASE_URL = 'http://8.129.128.30:4000'
-global.BASE_URL = 'http://localhost:4000'
+global.BASE_URL = 'http://8.129.128.30:4000'
+// global.BASE_URL = 'http://localhost:4000'
 app.use(router);
 
 //创建socket.io

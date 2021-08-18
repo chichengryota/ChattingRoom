@@ -12,9 +12,10 @@ module.exports = function (io) {
           msg: "该用户已登录聊天室，登录失败"
         })
       } else {
+        data.sid = socket.id;
         // 表示用户不存在,登录成功
         userList.push(data)
-        socket.emit("loginsuccess", {
+        socket.emit("loginSuccess", {
           ...data,
           msg: "登录聊天室成功"
         })
@@ -50,6 +51,17 @@ module.exports = function (io) {
     socket.on("sendImage", data => {
       //广播给所有用户
       io.emit("receiveImage", data)
+    })
+
+    // 一对一单聊消息
+    socket.on("oneMessage", data => {
+      // 发送给指定用户
+      socket.to(data.tosid).emit('oneMsg', data);
+    })
+    // 一对一单聊图片
+    socket.on("oneImage", data => {
+      // 发送给指定用户
+      socket.to(data.tosid).emit('oneImg', data);
     })
   });
 }

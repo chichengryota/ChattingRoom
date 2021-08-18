@@ -1,17 +1,18 @@
 let express = require('express');
 let router = express.Router();
+let upload = require('./util/upload');
 let login = require('./routes/login');
 let user = require('./routes/user');
 let message = require('./routes/message');
 let getImageList = require('./routes/imgList');
-let mobile = require('./routes/mobile');
+let friend = require('./routes/friend');
 
 router.post('/login', login.userLogin);
 router.post('/register', login.userRegister);
 // 查询用户信息
 router.post('/user/show/userinfo', user.showUserInfo);
 // 上传图片
-router.post('/upload', user.uploadparams, user.uploadImg)
+router.post('/upload', upload.uploadparams, upload.uploadImg)
 // 修改头像
 router.post('/user/update/avatar', user.updateAvatar);
 // 修改用户信息
@@ -34,16 +35,16 @@ router.post('/message/get/mycomment', message.getMyComment);
 router.get('/img_list', getImageList);
 
 // 搜索用户
-router.post('/search/user', mobile.serachUser);
+router.post('/search/user', friend.serachUser);
 // 申请添加好友
-router.post('/apply/adduser', mobile.applyAdd);
+router.post('/apply/adduser', friend.applyAdd);
 // 获取好友列表
-router.post('/friend/list', mobile.getFriendList);
+router.post('/friend/list', friend.getFriendList);
 // 获取好友请求数量
-router.post('/friend/apply/num', mobile.newFriend);
+router.post('/friend/apply/num', friend.newFriend);
 // 获取所有好友请求
-router.post('/friend/apply/list', mobile.friendApply);
+router.post('/friend/apply/list', friend.friendApply);
 // 同意好友请求
-router.post('/friend/agree/apply', mobile.agreeAdd);
+router.post('/friend/agree/apply', friend.agreeAdd);
 
 module.exports = router;
