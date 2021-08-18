@@ -2,7 +2,7 @@
 	<view>
 		<view class="top">
 			<image :src="bgImg" mode="" class="bg-img"></image>
-			<u-icon name="plus-circle" color="#fff" size="60" class="upload-icon" @click="show = true"></u-icon>
+			<u-icon name="plus-circle" color="#888" size="60" class="upload-icon" @click="show = true"></u-icon>
 			<image :src="avatar" mode="" class="avatar-img" @click="previewImage"></image>
 			<text class="nickname">{{ name }}</text>
 		</view>
@@ -28,7 +28,7 @@
 					<textarea v-model="inputVal" placeholder="记录此刻心情" class="input" />
 					<view class="upload-content-title">上传图片(最多6张)</view>
 				</view>
-					<u-upload :action="action" :file-list="fileList" max-count="6" width="160" height="160"></u-upload>
+				<u-upload ref="uUpload" :action="action" width="160" height="160" :max-size="3 * 1024 * 1024" max-count="6"></u-upload>
 				<button type="default" class="submit-button">发表</button>
 			</view>
 		</u-popup>
@@ -72,18 +72,6 @@ export default {
 						comment: 5,
 						like: 10,
 						isLike: 1
-					},
-					{
-						id: 2,
-						avatar: 'http://browser9.qhimg.com/bdm/800_450_85/t010769fafba59eb5c4.jpg',
-						name: '阿华',
-						time: 1614689655857,
-						isFollow: 1,
-						message: '阿达所得税法法撒飒飒发傻舒服舒服飒飒哈哈哈哈哈啊哈哈',
-						img: ['http://browser9.qhimg.com/bdm/800_450_85/t010769fafba59eb5c4.jpg', 'http://browser9.qhimg.com/bdm/800_450_85/t010769fafba59eb5c4.jpg'],
-						comment: 5,
-						like: 10,
-						isLike: 0
 					}
 				],
 				[
@@ -98,25 +86,12 @@ export default {
 						comment: 5,
 						like: 10,
 						isLike: 0
-					},
-					{
-						id: 2,
-						avatar: 'http://browser9.qhimg.com/bdm/800_450_85/t010769fafba59eb5c4.jpg',
-						name: '阿华',
-						time: 1614689655857,
-						isFollow: 0,
-						message: '阿达所得税法法撒飒飒发傻舒服舒服飒飒哈哈哈哈哈啊哈哈',
-						img: ['http://browser9.qhimg.com/bdm/800_450_85/t010769fafba59eb5c4.jpg', 'http://browser9.qhimg.com/bdm/800_450_85/t010769fafba59eb5c4.jpg'],
-						comment: 5,
-						like: 10,
-						isLike: 0
 					}
 				]
 			],
 			show: false,
 			inputVal: '',
-			action: 'http://www.example.com/upload',
-			fileList: []
+			action: this.apiServer+'upload?type=1'
 		};
 	},
 	onLoad() {
