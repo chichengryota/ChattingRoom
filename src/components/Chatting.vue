@@ -12,8 +12,8 @@
         :userList="userList"
         ref="chatroom"
         @sendServer="sendServer"
-        :message="message"
         @handleFile="handleFile"
+        @activeSid="activeSid"
       />
     </el-card>
   </div>
@@ -29,11 +29,12 @@ export default {
     return {
       username: "",
       avatar: "",
+      uid: null,
       isEnter: false,
       socket: null,
       user: {},
       userList: [],
-      message: {},
+      sid: null,
     };
   },
   created() {
@@ -41,6 +42,7 @@ export default {
     userInfo = JSON.parse(userInfo);
     this.avatar = userInfo.avatar;
     this.username = userInfo.username;
+    this.uid = userInfo.id;
   },
   mounted() {
     /**
@@ -51,7 +53,7 @@ export default {
     // 监听登录失败的请求
     this.socket.on("userExit", (data) => this.$message.error(data.msg));
     // 监听登录成功的请求
-    this.socket.on("loginsuccess", (data) => {
+    this.socket.on("loginSuccess", (data) => {
       this.$message.success(data.msg);
       this.user = data;
       this.isEnter = true;
@@ -71,12 +73,22 @@ export default {
     // 监听聊天的消息
     this.socket.on("receiveMessage", (data) => {
       // 把接收到的消息显示到聊天窗口中
-      this.message = data;
+      this.$refs.chatroom.handleGroup(data);
     });
     // 监听图片的消息
     this.socket.on("receiveImage", (data) => {
       // 把接收到的图片显示到聊天窗口中
-      this.$refs.chatroom.handleImage(data);
+      this.$refs.chatroom.handleGroup(data);
+    });
+    // 一对一单聊消息
+    this.socket.on("oneMsg", (data) => {
+      // 把接收到的消息显示到聊天窗口中
+      this.$refs.chatroom.handleOne(data);
+    });
+    // 一对一单聊图片
+    this.socket.on("oneImg", (data) => {
+      // 把接收到的图片显示到聊天窗口中
+      this.$refs.chatroom.handleOne(data);
     });
   },
   destroyed() {
@@ -85,16 +97,37 @@ export default {
   methods: {
     loginChat() {
       this.socket.emit("login", {
+        id: this.uid,
         username: this.username,
         avatar: this.avatar,
       });
     },
-    handleFile(file) {
-      this.socket.emit("sendImage", { ...this.user, file });
+    activeSid(sid) {
+      this.sid = sid;
     },
-    sendServer(content) {
-      const { username, avatar } = this.user;
-      this.socket.emit("sendMessage", { msg: content, username, avatar });
+    handleFile(file, isGroup) {
+      const { username, avatar, sid } = this.user;
+      const tosid = this.sid;
+      if (isGroup) {
+        this.socket.emit("sendImage", { username, avatar, file });
+      } else {
+        this.socket.emit("oneImage", { username, avatar, file, tosid, sid });
+      }
+    },
+    sendServer(content, isGroup) {
+      const { username, avatar, sid } = this.user;
+      const tosid = this.sid;
+      if (isGroup) {
+        this.socket.emit("sendMessage", { username, avatar, msg: content });
+      } else {
+        this.socket.emit("oneMessage", {
+          username,
+          avatar,
+          sid,
+          tosid,
+          msg: content,
+        });
+      }
     },
   },
 };

@@ -35,12 +35,10 @@ export default {
     this.getMyComment(uid);
   },
   methods: {
-    //判断是否登录
     async getMyComment(uid) {
       const { data: res } = await this.$http.post("message/get/mycomment", {
         uid: uid,
       });
-      console.log(res.data);
       this.commentList = res.data.reverse();
     },
   },

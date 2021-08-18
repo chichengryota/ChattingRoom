@@ -6,20 +6,33 @@
         <span>{{ user.username }}</span>
       </div>
       <el-divider></el-divider>
+      <div
+        class="group"
+        :class="isGroup ? 'active-user' : ''"
+        @click="chooseGroup"
+      >
+        <img src="../assets/img/star.png" alt="" />
+        <span>群聊</span>
+      </div>
       <div class="listTop">
         <span>当前用户列表</span>
       </div>
       <div class="userChat">
-        <ul class="onlineList">
-          <li class="userBox" v-for="item in userList" :key="item.username">
-            <img :src="item.avatar" alt="" />
-            <span>{{ item.username }}</span>
-          </li>
-        </ul>
+        <div
+          class="userBox"
+          :class="active === index ? 'active-user' : ''"
+          @click="chooseUser(item, index)"
+          v-for="(item, index) in userList"
+          :key="index"
+        >
+          <img :src="item.avatar" alt="" />
+          <span>{{ item.username }}</span>
+        </div>
       </div>
     </div>
     <div class="roomRight">
-      <p class="name">聊天室({{ userListLength }})</p>
+      <p class="name" v-if="isGroup">聊天室({{ userListLength }})</p>
+      <p class="name" v-else>{{ username }}</p>
       <div class="chatContent">
         <ul class="join" ref="joinUs">
           <li
@@ -111,16 +124,19 @@ export default {
   props: {
     user: Object,
     userList: Array,
-    message: Object,
   },
   data() {
     return {
       messageContent: [], //0不渲染，1表示自己发出的信息，2表示别人发出的信息
+      groupContent: [],
+      oneContent: [],
       emojiList: [],
-      content: "",
-      emojiShow: false,
-      imgUrl: "",
-      imgAllUrl: [],
+      content: "", // 输入框的内容
+      emojiShow: false, // 表情框
+      imgUrl: "", // 图片或截图
+      isGroup: true, // 是否是群聊
+      active: null, // 当前聊天用户
+      username: null, // 当前聊天用户名
     };
   },
   computed: {
@@ -128,19 +144,32 @@ export default {
       return this.userList.length;
     },
   },
-  watch: {
-    message(newValue) {
-      this.handleMessageBox(newValue);
-    },
-  },
   mounted() {
     this.emojiList = emoji;
+    this.userList.forEach((val, i) => {
+      this.oneContent[i] = [];
+    });
   },
   updated() {
     // 聊天定位到底部
     this.handleScrollBottom();
   },
+  watch: {
+    groupContent: {
+      handler(val) {
+        this.messageContent = val;
+      },
+      deep: true,
+    },
+    oneContent: {
+      handler(val) {
+        this.messageContent = val;
+      },
+      deep: true,
+    },
+  },
   methods: {
+    // 监听键盘按下事件
     handlePress(e) {
       if (e.ctrlKey && e.keyCode == 13) {
         //用户点击ctrl+enter触发换行
@@ -154,24 +183,45 @@ export default {
     handleCanvas() {
       const room = this.$refs.room;
       html2canvas(room).then((canvas) => {
-        const imgUrl = canvas.toDataURL();
-        this.$emit("handleFile", imgUrl);
+        const file = canvas.toDataURL();
+        this.$emit("handleFile", file, this.isGroup);
+        if (!this.isGroup) {
+          this.oneContent.push({ ...this.user, file, type: 1 });
+        }
       });
     },
     handleEmojiBlur() {
       this.emojiShow = false;
     },
+    // 输入表情
     handleEmoji(emoji) {
       this.content = this.$refs.textarea.value;
       this.$refs.textarea.value += emoji.char;
     },
     loadOverImg() {
+      // 图片预览
       this.$previewRefresh();
       this.handleScrollBottom();
     },
-    handleImage(file) {
-      this.handleMessageBox(file);
+    // 处理收到的群聊消息
+    handleGroup(data) {
+      this.isGroup = true;
+      this.active = null;
+      this.handleMessageBox(data);
     },
+    // 处理收到的单聊消息
+    handleOne(data) {
+      this.isGroup = false;
+      this.userList.forEach((val, i) => {
+        if (val.username == data.username) {
+          this.active = i;
+          this.username = val.username;
+        }
+      });
+      this.$emit("activeSid", data.sid);
+      this.handleMessageBox(data);
+    },
+    // 给发送图片做限制
     handleFile(e) {
       const file = e.target.files[0];
       if (file.size > 1024 * 1024) {
@@ -180,19 +230,24 @@ export default {
       const reader = new FileReader(); // 创建读取文件对象
       reader.readAsDataURL(file); // 发起异步请求，读取文件
       reader.onload = (e) => {
+        let file = e.target.result;
         // 文件读取完成后
         // 读取完成后，将结果赋值给img的src
-        this.$emit("handleFile", e.target.result);
+        this.$emit("handleFile", file, this.isGroup);
+        if (!this.isGroup) {
+          this.oneContent.push({ ...this.user, file, type: 1 });
+        }
       };
     },
     haveOneJoinRoom() {
       const joinRoom = this.$store.state.joinRoom;
-      this.messageContent.push({ ...joinRoom, type: 3 });
+      this.groupContent.push({ ...joinRoom, type: 3 });
     },
     haveOneleaveRoom() {
       const leaveRoom = this.$store.state.leaveRoom;
-      this.messageContent.push({ ...leaveRoom, type: 4 });
+      this.groupContent.push({ ...leaveRoom, type: 4 });
     },
+    // 点击发送按钮
     sendContentToServe() {
       // 获取到聊天的内容
       this.content = this.$refs.textarea.value;
@@ -201,20 +256,58 @@ export default {
         return alert("请输入内容");
       }
       //发送给服务器
-      this.$emit("sendServer", this.content);
+      this.$emit("sendServer", this.content, this.isGroup);
+      let msg = this.content;
+      if (!this.isGroup) {
+        this.oneContent.push({ ...this.user, msg, type: 1 });
+      }
     },
+    // 分类显示聊天窗口中的内容
     handleMessageBox(newValue) {
-      if (newValue.username === this.user.username) {
-        //是自己发的信息
-        this.messageContent.push({ ...newValue, type: 1 });
+      // 群组消息
+      if (this.isGroup) {
+        if (newValue.username === this.user.username) {
+          //是自己发的信息
+          this.groupContent.push({ ...newValue, type: 1 });
+        } else {
+          //是别人发的信息
+          this.groupContent.push({ ...newValue, type: 2 });
+        }
+        this.messageContent = this.groupContent;
       } else {
-        //是别人发的信息
-        this.messageContent.push({ ...newValue, type: 2 });
+        // 单人消息
+        if (this.oneContent.length > 1) {
+          let user = this.oneContent[this.oneContent.length - 1];
+          if (newValue.username !== user.username) {
+            this.oneContent = [];
+          }
+        }
+        this.oneContent.push({ ...newValue, type: 2 });
+        this.messageContent = this.oneContent;
       }
     },
     handleScrollBottom() {
       const ul = this.$refs.joinUs;
       ul.scrollTop = ul.scrollHeight;
+    },
+    // 点击群聊进入群聊房间
+    chooseGroup() {
+      this.active = null;
+      this.isGroup = true;
+      this.$refs.textarea.value = "";
+      this.messageContent = this.groupContent;
+    },
+    // 点击用户进行单聊
+    chooseUser(user, index) {
+      if (user.username == this.user.username) return;
+      this.isGroup = false;
+      if (this.active !== index) {
+        this.active = index;
+        this.oneContent = [];
+        this.username = user.username;
+        this.$refs.textarea.value = "";
+        this.$emit("activeSid", user.sid);
+      }
     },
   },
 };
@@ -253,6 +346,27 @@ export default {
     .el-divider {
       margin: 10px 0;
     }
+    .group {
+      display: flex;
+      align-items: center;
+      margin-bottom: 10px;
+      margin-right: 10px;
+      cursor: pointer;
+      box-sizing: border-box;
+      img {
+        width: 60px;
+        height: 60px;
+        margin-right: 20px;
+      }
+      span {
+        font-size: 20px;
+        color: #fff;
+      }
+    }
+    .active-user {
+      border: 2px solid #ccc;
+      border-radius: 5px;
+    }
     .listTop {
       span {
         color: #fff;
@@ -264,26 +378,23 @@ export default {
     }
     .userChat {
       overflow: auto;
-      height: 420px;
-      .onlineList {
-        list-style: none;
-        padding-left: 10px;
-        margin: 0;
+      height: 350px;
+      padding-left: 5px;
+      margin-right: 10px;
+      box-sizing: border-box;
+      .userBox {
+        display: flex;
+        align-items: center;
+        height: 55px;
+        cursor: pointer;
         img {
           width: 50px;
           height: 50px;
-          margin: 5px 10px 0 0;
+          margin-right: 20px;
         }
-        .userBox {
-          position: relative;
-          height: 55px;
-          cursor: pointer;
-          span {
-            position: absolute;
-            top: 16px;
-            font-size: 20px;
-            color: #fff;
-          }
+        span {
+          font-size: 20px;
+          color: #fff;
         }
       }
     }
@@ -308,6 +419,7 @@ export default {
   }
   .chatContent {
     height: 340px;
+    padding: 5px 0;
     .join {
       text-align: center;
       color: #ccc;
@@ -315,10 +427,10 @@ export default {
       height: 100%;
       margin-bottom: 0;
       margin-top: 0;
-      padding: 5px 30px 0;
+      padding: 10px 30px 0;
       list-style: none;
       li {
-        padding-bottom: 12px;
+        padding-bottom: 10px;
       }
     }
     .join::-webkit-scrollbar {
